@@ -40,22 +40,19 @@ function replicate_ui_rules_action_info() {
       'label' => t('Replicate an Entity'),
       'group' => t('Replicate'),
       'parameter' => array(
-        'type' => array(
-          'type' => 'text',
-          'label' => t('Entity type'),
-          'options list' => 'rules_entity_action_type_options',
-          'description' => t('Specifies the type of the entity that should be created.'),
-          'restriction' => 'input',
-        ),
-        'entity' => array(
-          'type' => 'unknown',
-          'label' => t('Entity to replicate'),
+        'data' => array(
+          'type' => 'entity',
+          'label' => t('Entity'),
+          'description' => t('Specifies the entity, which should be saved permanently.'),
+          'restriction' => 'selector',
+          'wrapped' => TRUE,
         ),
       ),
       'provides' => array(
         'replica_entity' => array(
           'type' => 'entity',
-          'label' => t('Replica node'),
+          'label' => t('Replica entity'),
+          'wrapped' => TRUE,
         ),
       ),
     ),
@@ -98,16 +95,12 @@ function replicate_ui_replicate_node($node) {
 }
 
 /**
- * The action function for the 'replicate_ui_replicate_entity'.
+ * Action: Clone entity.
  */
-function replicate_ui_replicate_entity($type, $id) {
-  $toclone = entity_load_single($type, $id);
-  $toclone->id = null;
-  $new = replicate_entity($type, $toclone);
-  if ($new) {
-    drupal_set_message(t('Entity @title has been replicated!', array('@title' => $toclone->title)));
-    return array('replica_entity' => $new);
-  }
+function replicate_ui_replicate_entity($wrapper) {
+  $info = $wrapper->info();
+  $cloned_entity = replicate_clone_entity($info['type'], $wrapper->value());
+  return array('replica_entity' => entity_metadata_wrapper($info['type'], $cloned_entity));
 }
 
 /**
